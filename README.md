@@ -28,3 +28,7 @@ No external libraries, accounts, APIs or build tools are required. A connection 
 - Player spawn moved onto a verified open tile, facing into the starting corridor.
 - Mobile movement buttons now capture and release pointer input reliably, preventing stuck or ignored movement.
 - Turning controls also capture touch input and reset cleanly when focus changes.
+
+
+## Build 003 movement reliability
+Mobile movement now releases only on pointer-up/cancel rather than pointer-leave (which can fire when a finger drifts outside a button). Added global pointer-release safety handling and normalized collision-aware movement for keyboard and touch.

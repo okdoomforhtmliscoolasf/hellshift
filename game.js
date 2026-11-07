@@ -24,13 +24,25 @@ function drawWorld(){let w=canvas.width,h=canvas.height,half=h/2;ctx.fillStyle="
 function drawEnemies(){let list=enemies.filter(e=>e.alive).map(e=>({e,d:Math.hypot(e.x-player.x,e.y-player.y)})).sort((a,b)=>b.d-a.d);for(let {e,d} of list){let angle=Math.atan2(e.y-player.y,e.x-player.x)-player.a;while(angle>Math.PI)angle-=TAU;while(angle<-Math.PI)angle+=TAU;if(Math.abs(angle)>FOV*.75)continue;let sx=(.5+angle/FOV)*canvas.width,size=Math.min(canvas.height*1.1,canvas.height/(d*.9)),sy=canvas.height/2-size*.48;if(sx<0||sx>=canvas.width)continue;let zi=Math.max(0,Math.min(zbuffer.length-1,Math.floor(sx)));if(d>zbuffer[zi]+.15)continue;ctx.save();ctx.translate(sx,sy);ctx.scale(size/90,size/90);
  // original mechanical sentry silhouette, no gore
  ctx.fillStyle="#1b201c";ctx.fillRect(-24,10,48,54);ctx.fillStyle="#68796b";ctx.fillRect(-19,4,38,40);ctx.fillStyle="#9eae8b";ctx.fillRect(-14,10,28,18);ctx.fillStyle="#e45d43";ctx.fillRect(-11,16,7,5);ctx.fillRect(4,16,7,5);ctx.fillStyle="#252a22";ctx.fillRect(-29,24,10,35);ctx.fillRect(19,24,10,35);ctx.fillStyle="#a5a58b";ctx.fillRect(-16,55,12,14);ctx.fillRect(4,55,12,14);ctx.fillStyle="#d7ff42";ctx.fillRect(-5,32,10,5);ctx.restore();}}
-function move(dt){let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),side=(keys.d?1:0)-(keys.a?1:0);let turn=(keys.arrowright?1:0)-(keys.arrowleft?1:0)+touchTurn;player.a=(player.a+turn*turnSpeed*dt+TAU)%TAU;let dx=(Math.cos(player.a)*f-Math.sin(player.a)*side)*moveSpeed*dt,dy=(Math.sin(player.a)*f+Math.cos(player.a)*side)*moveSpeed*dt;if(!wall(player.x+dx,player.y))player.x+=dx;if(!wall(player.x,player.y+dy))player.y+=dy;}
+function move(dt){
+ let forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0);
+ let strafe=(keys.d?1:0)-(keys.a?1:0);
+ let turn=(keys.arrowright?1:0)-(keys.arrowleft?1:0)+touchTurn;
+ player.a=(player.a+turn*turnSpeed*dt+TAU)%TAU;
+ const len=Math.hypot(forward,strafe)||1;
+ const f=forward/len,side=strafe/len;
+ const dx=(Math.cos(player.a)*f-Math.sin(player.a)*side)*moveSpeed*dt;
+ const dy=(Math.sin(player.a)*f+Math.cos(player.a)*side)*moveSpeed*dt;
+ const radius=.18;
+ if(!wall(player.x+dx+Math.sign(dx)*radius,player.y))player.x+=dx;
+ if(!wall(player.x,player.y+dy+Math.sign(dy)*radius))player.y+=dy;
+}
 function updateEnemies(dt){for(let e of enemies){if(!e.alive)continue;let dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);if(d<7){let step=.5*dt;if(d>1.2){let nx=e.x+dx/d*step,ny=e.y+dy/d*step;if(!wall(nx,e.y))e.x=nx;if(!wall(e.x,ny))e.y=ny;}e.phase+=dt;if(e.phase>2.4&&d<5){e.phase=0;player.hp-=5;damageFlash=1;updateHUD();if(player.hp<=0)finish(false)}}}}
 function fire(){if(!active||paused||won)return;if(ammo<=0){$("#status").textContent="MAGAZINE EMPTY";return}ammo--;shotFlash=1;let target=null,best=999;for(let e of enemies){if(!e.alive)continue;let dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx)-player.a;while(a>Math.PI)a-=TAU;while(a<-Math.PI)a+=TAU;if(Math.abs(a)<.11&&d<best){let wallHit=cast(Math.atan2(dy,dx));if(wallHit.dist>d-.25){best=d;target=e}}}if(target){target.hp--;hitTimer=.25;show("#hit");setTimeout(()=>hide("#hit"),180);if(target.hp<=0){target.alive=false;kills++;$("#status").textContent="HOSTILE DISABLED";if(kills===6){$("#objective").textContent="OBJECTIVE COMPLETE";setTimeout(()=>finish(true),500)}}}else $("#status").textContent="SHOT FIRED";updateHUD()}
 function reload(){if(!active||paused||won)return;if(ammo>=36||reserve<=0){$("#status").textContent=reserve<=0?"NO RESERVE AMMO":"MAGAZINE FULL";return}let need=36-ammo,take=Math.min(need,reserve);ammo+=take;reserve-=take;$("#status").textContent="MAGAZINE RELOADED";updateHUD()}
 function finish(win){if(won)return;won=true;paused=true;$("#end-kicker").textContent=win?"SECTOR COMPLETE":"RUN TERMINATED";$("#end-title").innerHTML=win?"SECTOR CLEARED<span>.</span>":"SYSTEM FAILURE<span>.</span>";$("#end-copy").textContent=win?"All six security units are offline. The exit is unlocked.":"Your armor is depleted. Restart the run and try another route.";show("#end")}
 function frame(t){if(!active){requestAnimationFrame(frame);return}let dt=Math.min(.05,(t-last)/1000||0);last=t;if(!paused&&!won){move(dt);updateEnemies(dt)}drawWorld();requestAnimationFrame(frame)}
-function start(){reset();hide("#boot");hide("#pause");hide("#end");$("#game").classList.remove("hidden");active=true;paused=false;last=performance.now();canvas.focus?.();requestAnimationFrame(frame)}
+function start(){reset();hide("#boot");hide("#pause");hide("#end");$("#game").classList.remove("hidden");active=true;paused=false;last=performance.now();canvas.focus?.();$("#status").textContent="WASD / TOUCH TO MOVE";requestAnimationFrame(frame)}
 $("#start").onclick=start;$("#again").onclick=start;$("#restart").onclick=start;$("#pause-btn").onclick=()=>{if(!active||won)return;paused=true;show("#pause")};$("#resume").onclick=()=>{paused=false;hide("#pause");last=performance.now()};
 window.addEventListener("keydown",e=>{let k=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();keys[k]=true;if(k===" "||k==="enter")fire();if(k==="escape"&&active&&!won){paused=!paused;paused?show("#pause"):hide("#pause")}});
 window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false});
@@ -43,7 +55,16 @@ canvas.addEventListener("pointercancel",()=>touchLookX=null);
 $("#fire").addEventListener("pointerdown",e=>{e.preventDefault();fire()});
 $("#reload").addEventListener("pointerdown",e=>{e.preventDefault();reload()});
 window.addEventListener("keydown",e=>{if(e.key.toLowerCase()==="r")reload()});
-$$("[data-key]").forEach(b=>{let k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);keys[k]=true});["pointerup","pointercancel","pointerleave","lostpointercapture"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
+$$("[data-key]").forEach(b=>{
+ const k=b.dataset.key;
+ b.addEventListener("pointerdown",e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);keys[k]=true;$("#status").textContent="MOVING"});
+ const release=()=>{keys[k]=false};
+ b.addEventListener("pointerup",release);
+ b.addEventListener("pointercancel",release);
+ b.addEventListener("lostpointercapture",release);
+});
 $("#look-left").addEventListener("pointerdown",e=>{e.preventDefault();e.currentTarget.setPointerCapture?.(e.pointerId);touchTurn=-1});$("#look-right").addEventListener("pointerdown",e=>{e.preventDefault();e.currentTarget.setPointerCapture?.(e.pointerId);touchTurn=1});["pointerup","pointercancel","pointerleave"].forEach(ev=>{ $("#look-left").addEventListener(ev,()=>touchTurn=0);$("#look-right").addEventListener(ev,()=>touchTurn=0)});
+window.addEventListener("pointerup",()=>{for(const k of ["w","a","s","d"])keys[k]=false;touchTurn=0});
+window.addEventListener("pointercancel",()=>{for(const k of ["w","a","s","d"])keys[k]=false;touchTurn=0});
 window.addEventListener("blur",()=>{keys={};touchTurn=0;touchLookX=null});document.addEventListener("visibilitychange",()=>{if(document.hidden){keys={};touchTurn=0;touchLookX=null}});
 })();
