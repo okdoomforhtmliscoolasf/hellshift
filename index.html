@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#171815"><title>HELLSHIFT — Browser FPS</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<div id="boot" class="overlay">
+  <div class="boot-card">
+    <div class="micro">A BROWSER FPS EXPERIMENT / BUILD 001</div>
+    <div class="logo">HELL<span>SHIFT</span></div>
+    <div class="tagline">ONE RUN. NO WAY BACK.</div>
+    <p>A sealed industrial complex. Rogue security machines. Find the exit.</p>
+    <button id="start">START RUN <b>↗</b></button>
+    <div class="boot-note">WASD / ARROWS TO MOVE · MOUSE TO LOOK · CLICK TO FIRE<br>MOBILE: MOVE PAD · SWIPE TO LOOK · FIRE / RELOAD</div>
+  </div>
+</div>
+<div id="pause" class="overlay hidden"><div class="boot-card"><div class="micro">SIMULATION SUSPENDED</div><div class="logo small">PAUSED<span>.</span></div><button id="resume">RESUME RUN</button><button id="restart" class="secondary">RESTART LEVEL</button></div></div>
+<div id="end" class="overlay hidden"><div class="boot-card"><div class="micro" id="end-kicker">RUN COMPLETE</div><div class="logo small" id="end-title">SECTOR CLEARED<span>.</span></div><p id="end-copy">The exit is secure.</p><button id="again">RUN AGAIN</button></div></div>
+<main id="game" class="hidden">
+ <header class="topline"><div class="brand">HELLSHIFT <span>001</span></div><div class="mission">SECTOR 01 / THE FOUNDRY</div><button id="pause-btn">Ⅱ PAUSE</button></header>
+ <section class="viewport"><canvas id="view" width="960" height="540"></canvas><div class="crosshair"><i></i><b></b></div><div id="hit" class="hit hidden">HIT</div><div class="screen-vignette"></div><div class="scanline"></div>
+  <div class="hud"><div class="hud-box"><small>ARMOR</small><strong id="health">100</strong><div class="bar"><i id="healthbar"></i></div></div><div class="hud-center"><div class="weapon">▰ <span>BURST RIFLE</span></div><div class="ammo"><b id="ammo">36</b><small> / 108</small></div></div><div class="hud-box right"><small>HOSTILES</small><strong id="kills">0 / 6</strong><div class="bar"><i id="killbar"></i></div></div></div>
+ </section>
+ <footer class="bottomline"><span id="objective">OBJECTIVE: CLEAR THE SECTOR</span><span id="status">SYSTEMS ONLINE</span></footer>
+ <div class="mobile-controls">
+  <div class="dpad"><button data-key="w">▲</button><div><button data-key="a">◀</button><button data-key="s">▼</button><button data-key="d">▶</button></div></div>
+  <div class="lookpad"><button id="look-left" aria-label="Turn left">↶</button><button id="reload" aria-label="Reload">R</button><button id="fire" aria-label="Fire weapon">FIRE</button><button id="look-right" aria-label="Turn right">↷</button></div>
+ </div>
+</main>
+<script src="game.js"></script></body></html>
