@@ -2,11 +2,11 @@
 const $=s=>document.querySelector(s),canvas=$("#view"),ctx=canvas.getContext("2d");
 const MAP=["1111111111111111","1000000000000001","1022200000333001","1000200000003001","1000200440003001","1000000440000001","1000000000000001","1000550000660001","1000500000060001","1000500000060001","1000000000000001","1000000000000001","1000000000000001","1000000000000001","1000000000000001","1111111111111111"].map(x=>x.split("").map(Number));
 const MW=16,MH=16,FOV=Math.PI/3,TAU=Math.PI*2;
-let player={x:2.5,y:2.5,a:.25,hp:100},ammo=36,reserve=108,kills=0,active=false,paused=false,won=false,keys={},last=0,shotFlash=0,damageFlash=0,hitTimer=0,moveSpeed=2.65,turnSpeed=2.2;
+let player={x:1.5,y:1.5,a:0,hp:100},ammo=36,reserve=108,kills=0,active=false,paused=false,won=false,keys={},last=0,shotFlash=0,damageFlash=0,hitTimer=0,moveSpeed=2.65,turnSpeed=2.2;
 let enemies=[],zbuffer=new Float32Array(960),touchTurn=0,touchLookX=null;
 const spawn=()=>{enemies=[{x:8.5,y:3.5,hp:2,alive:true,phase:0},{x:12.5,y:5.5,hp:2,alive:true,phase:1},{x:5.5,y:8.5,hp:2,alive:true,phase:2},{x:10.5,y:9.5,hp:2,alive:true,phase:3},{x:3.5,y:12.5,hp:2,alive:true,phase:4},{x:13.5,y:12.5,hp:2,alive:true,phase:5}]};
 const wall=(x,y)=>{let ix=Math.floor(x),iy=Math.floor(y);return ix<0||iy<0||ix>=MW||iy>=MH||MAP[iy][ix]!==0};
-function reset(){player={x:2.5,y:2.5,a:.25,hp:100};ammo=36;reserve=108;kills=0;spawn();won=false;updateHUD();$("#objective").textContent="OBJECTIVE: CLEAR THE SECTOR";$("#status").textContent="SYSTEMS ONLINE";$("#end").classList.add("hidden");}
+function reset(){player={x:1.5,y:1.5,a:0,hp:100};ammo=36;reserve=108;kills=0;spawn();won=false;updateHUD();$("#objective").textContent="OBJECTIVE: CLEAR THE SECTOR";$("#status").textContent="SYSTEMS ONLINE";$("#end").classList.add("hidden");}
 function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).classList.add("hidden")}
 function updateHUD(){$("#health").textContent=Math.max(0,Math.ceil(player.hp));$("#healthbar").style.width=Math.max(0,player.hp)+"%";$("#ammo").textContent=ammo;$("#kills").textContent=kills+" / 6";$("#killbar").style.width=(kills/6*100)+"%"}
 function cast(a){let sin=Math.sin(a),cos=Math.cos(a),dist=0,hit=0,side=0;while(dist<20){dist+=.025;let x=player.x+cos*dist,y=player.y+sin*dist;if(wall(x,y)){hit=MAP[Math.floor(y)]?.[Math.floor(x)]||1;side=Math.abs((x%1)-.5)>Math.abs((y%1)-.5)?1:0;break}}return{dist,hit,side}}
@@ -43,7 +43,7 @@ canvas.addEventListener("pointercancel",()=>touchLookX=null);
 $("#fire").addEventListener("pointerdown",e=>{e.preventDefault();fire()});
 $("#reload").addEventListener("pointerdown",e=>{e.preventDefault();reload()});
 window.addEventListener("keydown",e=>{if(e.key.toLowerCase()==="r")reload()});
-$$("[data-key]").forEach(b=>{let k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true});["pointerup","pointercancel","pointerleave"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
-$("#look-left").addEventListener("pointerdown",()=>touchTurn=-1);$("#look-right").addEventListener("pointerdown",()=>touchTurn=1);["pointerup","pointercancel","pointerleave"].forEach(ev=>{ $("#look-left").addEventListener(ev,()=>touchTurn=0);$("#look-right").addEventListener(ev,()=>touchTurn=0)});
-window.addEventListener("blur",()=>{keys={};touchTurn=0});
+$$("[data-key]").forEach(b=>{let k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);keys[k]=true});["pointerup","pointercancel","pointerleave","lostpointercapture"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
+$("#look-left").addEventListener("pointerdown",e=>{e.preventDefault();e.currentTarget.setPointerCapture?.(e.pointerId);touchTurn=-1});$("#look-right").addEventListener("pointerdown",e=>{e.preventDefault();e.currentTarget.setPointerCapture?.(e.pointerId);touchTurn=1});["pointerup","pointercancel","pointerleave"].forEach(ev=>{ $("#look-left").addEventListener(ev,()=>touchTurn=0);$("#look-right").addEventListener(ev,()=>touchTurn=0)});
+window.addEventListener("blur",()=>{keys={};touchTurn=0;touchLookX=null});document.addEventListener("visibilitychange",()=>{if(document.hidden){keys={};touchTurn=0;touchLookX=null}});
 })();

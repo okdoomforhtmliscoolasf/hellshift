@@ -22,3 +22,9 @@ No external libraries, accounts, APIs or build tools are required. A connection 
 - Turn-left button for precise adjustment.
 - FIRE button shoots; R button reloads.
 - Desktop: press R to reload.
+
+
+## Build 002 fixes
+- Player spawn moved onto a verified open tile, facing into the starting corridor.
+- Mobile movement buttons now capture and release pointer input reliably, preventing stuck or ignored movement.
+- Turning controls also capture touch input and reset cleanly when focus changes.

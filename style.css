@@ -44,3 +44,8 @@
  .lookpad button{width:38px;height:38px}
  .lookpad #fire{width:52px;height:52px}
 }
+
+/* Build 002 visual balance */
+:root{--red:#e85d48}
+.viewport{background:#30382f}
+#view{background:#30382f}
